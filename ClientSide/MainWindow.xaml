@@ -12,7 +12,18 @@
             <ColumnDefinition/>
             <ColumnDefinition Width="1.2*"/>
         </Grid.ColumnDefinitions>
-        <ListBox x:Name="List" SelectedItem="{Binding User}" />
+        <ListView x:Name="List" ItemsSource="{Binding Users}" SelectedItem="{Binding User}" >
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Id" Width="110" DisplayMemberBinding="{Binding Id}"/>
+
+                <GridViewColumn Header="Name" Width="110" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Surname" Width="110" DisplayMemberBinding="{Binding Surname}"/>
+
+                </GridView>
+
+            </ListView.View>
+        </ListView>
         <StackPanel Grid.Column="1">
             <TextBox  Height="30" Margin="20 12 20 0" Foreground="#060405" Text="{Binding User.Name}" x:Name="NameTxt" FontSize="23" Width="220"/>
             <TextBox materialDesign:HintAssist.Hint="Surname" Text="{Binding User.Surname}" Height="30" Margin="20 12 20 0" x:Name="SurnameTxt" FontSize="23" Width="220" Foreground="#060405"/>

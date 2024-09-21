@@ -22,24 +22,39 @@ try
             {
                 var url = context.Request.RawUrl;
                 var splitedUrl = url.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var i in splitedUrl)
+                    Console.WriteLine(i);
                 var _serviceName = $"Server.{splitedUrl[0]}Service";
                 Assembly assembly = Assembly.GetExecutingAssembly();
                 Type? type = assembly.GetType(_serviceName);
                 if (type is null)
                     return;
                 var service = Activator.CreateInstance(type) as UserService;
-                var methodName = splitedUrl[1];
+                var methodName = $"{splitedUrl[1]}User";
                 var mi = type.GetMethod(methodName);
-                if (splitedUrl.Length > 2)
+                using var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding);
+                var requestBody = reader.ReadToEnd();
+                var result = mi?.Invoke(service, [requestBody]);
+                if (result is List<User> users)
                 {
-                    //User? user = JsonSerializer.Deserialize<User>(splitedUrl[2])!;
-                    //User[] u = [user];
-                    mi?.Invoke(service, null);
-                }
-                else
-                {
-                    mi?.Invoke(service,null);
+                    context.Response.ContentType = "application/json";
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
 
+                    using var responseStream = context.Response.OutputStream;
+                    JsonSerializer.Serialize(responseStream, users);
+                    responseStream.Flush();
+                }
+                else if (result is string responseString)
+                {
+                    context.Response.ContentType = "text/plain";
+                    if (responseString == "Successful")
+                        context.Response.StatusCode = (int)HttpStatusCode.OK;
+                    else
+                        context.Response.StatusCode = (int)HttpStatusCode.NotExtended;
+
+                    using var writer = new StreamWriter(context.Response.OutputStream);
+                    writer.Write(responseString);
+                    writer.Flush();
                 }
             }
             catch (Exception ex)
@@ -47,7 +62,6 @@ try
                 Console.WriteLine(ex.Message);
             }
         });
-        // ,asdasd,dasd
     }
 
 }
